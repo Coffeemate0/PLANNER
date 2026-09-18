@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#013E37">
+  <meta name="description" content="Together — a private shared planner for couples.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Together">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <title>Together — Couples Planner</title>
+  <style>
+    :root{
+      --primary:#013E37; --primary-dark:#002D28; --primary-light:#075E55;
+      --accent:#FFEFB3; --accent-light:#FFF7D6;
+      --background:#FFFDF5; --surface:#FFFFFF;
+      --text:#013E37; --text-secondary:#61706D; --text-muted:#8A9693;
+      --border:#E9E8DE; --success:#A8D5BA; --danger:#D96C6C; --warning:#E8B85C;
+      --shadow:0 8px 30px rgba(1,62,55,.08);
+      --radius-sm:12px; --radius-md:18px; --radius-lg:24px; --radius-xl:30px;
+      --nav-h:76px; --content-max:1080px;
+      color-scheme:light;
+    }
+    [data-theme="dark"]{
+      --background:#012E2A; --surface:#06453E; --text:#FFFDF5; --text-secondary:#D7E3DF; --text-muted:#A7BCB7;
+      --border:rgba(255,239,179,.13); --shadow:0 10px 34px rgba(0,0,0,.20);
+      color-scheme:dark;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--background);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit}
+    .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .hidden{display:none!important}
+
+    /* Auth */
+    #authView{min-height:100vh;display:grid;place-items:center;padding:24px;background:
+      radial-gradient(circle at 15% 15%,rgba(255,239,179,.65),transparent 26%),
+      var(--background)}
+    .auth-shell{width:min(100%,430px)}
+    .brand-lockup{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+    .brand-mark{width:58px;height:58px;border-radius:19px;display:grid;place-items:center;background:var(--primary);box-shadow:var(--shadow);color:var(--accent);overflow:hidden}
+    .brand-mark img{width:100%;height:100%;object-fit:cover}
+    .brand-name{font-size:28px;font-weight:800;letter-spacing:-.03em}
+    .brand-tag{font-size:13px;color:var(--text-secondary);margin-top:3px}
+    .auth-card{background:var(--surface);border-radius:32px;padding:24px;box-shadow:var(--shadow);border:1px solid rgba(1,62,55,.05)}
+    .auth-title{font-size:28px;letter-spacing:-.03em;margin:0 0 6px}
+    .auth-sub{margin:0 0 22px;color:var(--text-secondary);line-height:1.45}
+    .auth-tabs{display:flex;padding:4px;background:var(--accent-light);border-radius:16px;margin-bottom:20px}
+    .auth-tab{flex:1;border:0;background:transparent;padding:11px;border-radius:13px;color:var(--text-secondary);font-weight:700}
+    .auth-tab.active{background:var(--surface);color:var(--primary);box-shadow:0 3px 10px rgba(1,62,55,.08)}
+    .form-grid{display:grid;gap:14px}.field{display:grid;gap:7px}.field label{font-weight:700;font-size:14px}.field input,.field select,.field textarea{
+      width:100%;padding:13px 14px;border:1px solid var(--border);background:var(--background);color:var(--text);border-radius:15px;outline:none;transition:.18s border-color,.18s box-shadow}
+    .field textarea{min-height:100px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary-light);box-shadow:0 0 0 4px rgba(1,62,55,.09)}
+   /*.primary-btn,.secondary-btn,.danger-btn,.icon-btn{min-height:44px;border:0;border-radius:15px;padding:0 16px;font-weight:800;transition:transform .12s ease,opacity .18s,background .18s}*/
+   .primary-btn,.secondary-btn,.danger-btn,.icon-btn{
+  min-height:44px;
+  border:0;
+  border-radius:15px;
+  padding:0 16px;
+  font-weight:800;
+  transition:transform .12s ease,opacity .18s,background .18s;
+  white-space:nowrap;
+}
+   .primary-btn{background:var(--primary);color:#fff}.secondary-btn{background:var(--accent);color:var(--primary)}.danger-btn{background:rgba(217,108,108,.13);color:var(--danger)}
+    .icon-btn{width:44px;padding:0;background:var(--surface);color:var(--text);border:1px solid var(--border);display:grid;place-items:center}
+    button:active{transform:scale(.98)}button:disabled{opacity:.55;cursor:not-allowed}
+    .auth-helper{font-size:12px;color:var(--text-muted);margin-top:14px;line-height:1.5}.error-box{background:rgba(217,108,108,.12);color:#9a3a3a;padding:11px 12px;border-radius:13px;font-size:13px;margin-bottom:14px}
+
+    /* App shell */
+    #appView{min-height:100vh}.app-shell{min-height:100vh;display:grid;grid-template-columns:230px 1fr}
+    .sidebar{position:sticky;top:0;height:100vh;padding:22px 16px;display:flex;flex-direction:column;gap:18px;border-right:1px solid var(--border);background:rgba(255,255,255,.72);backdrop-filter:blur(20px)}
+    [data-theme="dark"] .sidebar{background:rgba(1,46,42,.82)}
+    .side-brand{display:flex;align-items:center;gap:11px;padding:4px 7px}.side-brand .brand-mark{width:42px;height:42px;border-radius:14px}.side-brand .brand-name{font-size:19px}
+    .side-nav{display:grid;gap:7px}.nav-btn{border:0;background:transparent;color:var(--text-secondary);text-align:left;padding:12px 13px;border-radius:15px;font-weight:800;display:flex;align-items:center;gap:10px}.nav-btn.active{background:var(--accent);color:var(--primary)}
+    .side-footer{margin-top:auto;display:grid;gap:8px}.sync-pill{font-size:12px;color:var(--text-secondary);padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+    .main{min-width:0}.topbar{position:sticky;top:0;z-index:20;height:68px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,253,245,.76);backdrop-filter:blur(22px);border-bottom:1px solid var(--border)}
+    [data-theme="dark"] .topbar{background:rgba(1,46,42,.78)}
+    .page-title{font-size:20px;font-weight:850;letter-spacing:-.02em}.top-actions{display:flex;align-items:center;gap:8px}.online-dot{width:9px;height:9px;border-radius:999px;background:var(--success);box-shadow:0 0 0 4px rgba(168,213,186,.18)}.online-dot.off{background:var(--warning);box-shadow:none}
+    .content{width:min(100%,var(--content-max));margin:0 auto;padding:24px 22px calc(var(--nav-h) + 30px)}
+
+    /* General UI */
+    .screen{display:none}.screen.active{display:block;animation:fadeIn .22s ease}.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}.section-title{margin:0;font-size:23px;letter-spacing:-.03em}.muted{color:var(--text-secondary)}.small{font-size:13px}.tiny{font-size:11px}
+    .card{background:var(--surface);border:1px solid rgba(1,62,55,.045);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)}
+    .grid{display:grid;gap:14px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:var(--accent-light);color:var(--primary);font-size:12px;font-weight:800}.chip.dark{background:var(--primary);color:#fff}.chip.success{background:rgba(168,213,186,.3)}.chip.warn{background:rgba(232,184,92,.22)}.chip.danger{background:rgba(217,108,108,.16);color:#9a3a3a}
+    .empty{padding:30px 18px;text-align:center}.empty-ico{width:58px;height:58px;border-radius:20px;background:var(--accent);display:grid;place-items:center;font-size:26px;margin:0 auto 12px}.empty h3{margin:0 0 5px}.empty p{margin:0 0 15px;color:var(--text-secondary)}
+    .list{display:grid;gap:10px}.list-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--border);border-radius:17px;background:var(--background)}
+    .item-main{display:flex;align-items:center;gap:11px;min-width:0}.item-icon{width:42px;height:42px;border-radius:14px;background:var(--accent);display:grid;place-items:center;font-size:20px;flex:0 0 auto}.item-copy{min-width:0}.item-title{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item-meta{font-size:12px;color:var(--text-secondary);margin-top:2px}.item-actions{display:flex;align-items:center;gap:6px}
+    .progress{height:8px;border-radius:999px;background:var(--accent-light);overflow:hidden}.progress>span{display:block;height:100%;border-radius:inherit;background:var(--primary);width:0;transition:width .35s ease}
+    .stat{padding:17px;border-radius:22px;background:var(--surface);box-shadow:var(--shadow);border:1px solid rgba(1,62,55,.04)}.stat-label{font-size:12px;color:var(--text-secondary);font-weight:700}.stat-value{font-size:25px;font-weight:900;letter-spacing:-.04em;margin-top:6px}
+    .hero{background:var(--primary);color:#fff;border-radius:30px;padding:22px;position:relative;overflow:hidden;box-shadow:var(--shadow)}.hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;background:var(--accent);opacity:.24;right:-70px;top:-80px}.hero-inner{position:relative;z-index:1}.hero-kicker{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}.hero h1{font-size:30px;line-height:1.05;letter-spacing:-.045em;margin:8px 0 7px}.hero p{margin:0;color:rgba(255,255,255,.72)}
+    .next-card{background:var(--accent);border-radius:27px;padding:20px;display:grid;gap:8px}.next-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.next-title{font-size:22px;font-weight:900;letter-spacing:-.03em}.next-sub{color:var(--primary);opacity:.78}.date-big{font-size:17px;font-weight:850}.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.quick-btn{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:13px 10px;min-height:70px;font-weight:850;color:var(--primary);box-shadow:0 4px 16px rgba(1,62,55,.05)}.quick-btn span{display:block;font-size:20px;margin-bottom:5px}
+
+    /* Calendar */
+    .calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.month-label{font-weight:900;font-size:18px}.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cal-name,.cal-cell{min-height:43px;display:grid;place-items:center;border-radius:12px}.cal-name{font-size:11px;color:var(--text-muted);font-weight:800}.cal-cell{background:transparent;border:1px solid transparent;position:relative;color:var(--text)}.cal-cell.out{opacity:.32}.cal-cell.today{border-color:var(--primary)}.cal-cell.selected{background:var(--accent);font-weight:900}.cal-dot{position:absolute;bottom:6px;width:5px;height:5px;background:var(--primary);border-radius:50%}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(1,62,55,.34);backdrop-filter:blur(8px);display:grid;place-items:end center;z-index:100;padding:12px}.modal{width:min(100%,560px);max-height:92vh;overflow:auto;background:var(--surface);border-radius:28px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:sheetIn .2s ease}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.modal-title{font-size:21px;font-weight:900}.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+    /* More grid */
+    .more-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.more-card{border:1px solid var(--border);background:var(--surface);border-radius:21px;padding:16px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow);text-align:left}.more-card .ico{font-size:25px}.more-card strong{
+  display:block;
+  font-size:15px;
+  line-height:1.2;
+  margin-bottom:4px;
+}
+
+.more-card span{
+  display:block;
+  font-size:12px;
+  line-height:1.3;
+  color:var(--text-secondary);
+}
+    .settings-list{display:grid;gap:10px}.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;border:1px solid var(--border);border-radius:18px;background:var(--surface)}.setting-copy strong{display:block}.setting-copy span{display:block;font-size:12px;color:var(--text-secondary);margin-top:3px}
+    .switch{width:48px;height:28px;border:0;border-radius:999px;background:var(--border);padding:3px;transition:.2s}.switch:before{content:"";display:block;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.15)}.switch.on{background:var(--primary)}.switch.on:before{transform:translateX(20px)}
+    .notes-card{background:var(--accent);color:var(--primary)}
+
+    /* Mobile nav */
+    .mobile-nav{display:none}.fab{display:none}
+
+    /* Toast/loading */
+    #toastRoot{position:fixed;left:50%;bottom:calc(var(--nav-h) + 18px);transform:translateX(-50%);z-index:200;display:grid;gap:8px;width:min(calc(100% - 28px),420px)}.toast{background:var(--primary);color:#fff;padding:13px 15px;border-radius:16px;box-shadow:0 10px 30px rgba(1,62,55,.2);font-weight:700;font-size:13px;animation:toastIn .2s ease}.toast.bad{background:#9a3a3a}.toast.ok{background:#2c6f52}
+    #boot{position:fixed;inset:0;z-index:500;background:var(--background);display:grid;place-items:center}.boot-inner{text-align:center}.boot-logo{width:74px;height:74px;border-radius:24px;overflow:hidden;margin:auto;box-shadow:var(--shadow)}.boot-logo img{width:100%;height:100%}.boot-title{font-size:26px;font-weight:900;margin-top:12px}.boot-sub{font-size:12px;color:var(--text-secondary);margin-top:4px}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@keyframes sheetIn{from{transform:translateY(18px);opacity:.5}to{transform:none;opacity:1}}@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+    @media (max-width:900px){.app-shell{grid-template-columns:1fr}.sidebar{display:none}.topbar{padding:0 16px}.grid-4{grid-template-columns:repeat(2,1fr)}.content{padding:18px 16px calc(var(--nav-h) + 20px)}}
+    @media (max-width:760px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(3,1fr)}.more-grid{grid-template-columns:repeat(2,1fr)}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(255,255,255,.88);backdrop-filter:blur(22px);border-top:1px solid var(--border);z-index:50}.mobile-nav button{border:0;background:transparent;color:var(--text-secondary);font-size:10px;font-weight:800;display:grid;place-items:center;gap:2px;border-radius:14px}.mobile-nav button span{font-size:20px;line-height:1}.mobile-nav button.active{color:var(--primary);background:var(--accent-light)}.fab{position:fixed;display:grid;place-items:center;right:16px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 15px);width:56px;height:56px;border:0;border-radius:20px;background:var(--primary);color:var(--accent);font-size:28px;box-shadow:0 14px 30px rgba(1,62,55,.26);z-index:45}.form-row{grid-template-columns:1fr}.modal-backdrop{padding:0}.modal{border-radius:28px 28px 0 0;max-height:94vh;padding:16px}.topbar{height:62px}.hero h1{font-size:28px}}
+    @media (prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <div class="boot-inner"><div class="boot-logo"><img src="icons/icon.svg" alt="Together"></div><div class="boot-title">Together</div><div class="boot-sub">Plan your moments together.</div></div>
+  </div>
+
+  <section id="authView" class="hidden">
+    <div class="auth-shell">
+      <div class="brand-lockup"><div class="brand-mark"><img src="icons/icon.svg" alt="Together logo"></div><div><div class="brand-name">Together</div><div class="brand-tag">Your shared life, in one place.</div></div></div>
+      <div class="auth-card">
+        <div class="auth-tabs"><button id="loginTab" class="auth-tab active">Log In</button><button id="signupTab" class="auth-tab">Create Account</button></div>
+        <div id="authError" class="error-box hidden"></div>
+        <form id="loginForm" class="form-grid">
+          <div><h1 class="auth-title">Welcome back ❤️</h1><p class="auth-sub">Sign in to see what you two have planned.</p></div>
+          <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+          <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></div>
+          <button class="primary-btn" type="submit">Log In</button>
+          <button id="forgotBtn" class="secondary-btn" type="button">Forgot Password</button>
+        </form>
+        <form id="signupForm" class="form-grid hidden">
+          <div><h1 class="auth-title">Start together ❤️</h1><p class="auth-sub">Create one private shared account for you and your partner.</p></div>
+          <div class="field"><label for="signupCouple">Couple Name</label><input id="signupCouple" required placeholder="Miko & Sarah"></div>
+          <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+          <div class="field"><label for="signupPassword">Password</label><input id="signupPassword" type="password" minlength="6" autocomplete="new-password" required placeholder="At least 6 characters"></div>
+          <div class="field"><label for="signupConfirm">Confirm Password</label><input id="signupConfirm" type="password" minlength="6" autocomplete="new-password" required placeholder="Repeat your password"></div>
+          <button class="primary-btn" type="submit">Create Account</button>
+          <div class="auth-helper">Your couple record and profile are created by the Supabase database trigger. No service-role key is stored in this app.</div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="side-brand"><div class="brand-mark"><img src="icons/icon.svg" alt="Together logo"></div><div class="brand-name">Together</div></div>
+        <nav id="sideNav" class="side-nav"></nav>
+        <div class="side-footer"><div id="syncPill" class="sync-pill">🟢 Synced</div><button id="logoutBtnSide" class="secondary-btn" type="button">Log Out</button></div>
+      </aside>
+      <main class="main">
+        <header class="topbar"><div class="page-title" id="pageTitle">Home</div><div class="top-actions"><span id="onlineDot" class="online-dot"></span><button id="themeBtn" class="icon-btn" title="Toggle appearance">☾</button></div></header>
+        <div class="content">
+          <section id="screen-home" class="screen active"></section>
+          <section id="screen-calendar" class="screen"></section>
+          <section id="screen-dates" class="screen"></section>
+          <section id="screen-goals" class="screen"></section>
+          <section id="screen-expenses" class="screen"></section>
+          <section id="screen-memories" class="screen"></section>
+          <section id="screen-wishlist" class="screen"></section>
+          <section id="screen-tasks" class="screen"></section>
+          <section id="screen-notifications" class="screen"></section>
+          <section id="screen-settings" class="screen"></section>
+        </div>
+      </main>
+    </div>
+    <nav id="mobileNav" class="mobile-nav"></nav>
+    <button id="fab" class="fab" aria-label="Add">+</button>
+  </section>
+
+  <div id="modalRoot"></div><div id="toastRoot"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  'use strict';
+  const CONFIG = {
+    SUPABASE_URL: 'https://zwwpjnxxwkwznptxooxx.supabase.co',
+    SUPABASE_ANON_KEY: 'sb_publishable_hC3cjOIhoG88LHvLhjqysA_TkBvkvkO'
+  };
+  const TABLES = ['events','date_plans','date_tasks','expenses','goals','goal_contributions','memories','wishlist','notifications'];
+  const CACHE_KEY='together-cache-v1'; const QUEUE_DB='together-offline-v1';
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const state={session:null,user:null,profile:null,couple:null,data:{events:[],date_plans:[],date_tasks:[],expenses:[],goals:[],goal_contributions:[],memories:[],wishlist:[],notifications:[]},current:'home',theme:localStorage.getItem('together-theme')||'light',calendarDate:new Date(),selectedDate:null};
+  let supabase=null, realtimeChannel=null, modalOnSubmit=null;
+
+  const categoryMap={date:['❤️','Date'],anniversary:['💍','Anniversary'],birthday:['🎂','Birthday'],travel:['✈️','Travel'],cinema:['🎬','Cinema'],dinner:['🍽️','Dinner'],gift:['🎁','Gift'],other:['📌','Other']};
+  const expenseCats=['Food','Entertainment','Transportation','Gifts','Travel','Hotel','Shopping','Other'];
+  const wishlistCats=['Restaurant','Movie','Place','Travel','Gift','Activity','Buy'];
+  const priorities=['Low','Medium','High'];
+  const nav=[['home','🏠','Home'],['calendar','📅','Calendar'],['dates','❤️','Dates'],['goals','🎯','Goals'],['more','•••','More']];
+  const moreCards=[['expenses','💰','Expenses','Shared spending'],['memories','📸','Memories','Photos & moments'],['wishlist','🎁','Wishlist','Things to do or buy'],['tasks','📝','Tasks','Shared to-dos'],['notifications','🔔','Notifications','Reminders & alerts'],['settings','⚙️','Settings','Couple & account']];
+
+  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+  function money(n){return new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',maximumFractionDigits:2}).format(Number.isFinite(+n)?+n:0)}
+  function dateFmt(v,opts={year:'numeric',month:'short',day:'numeric'}){if(!v)return '—'; const d=new Date(v+'T00:00:00'); return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('en-PH',opts)}
+  function timeFmt(v){if(!v)return ''; const [h,m]=v.split(':').map(Number); if(!Number.isFinite(h)||!Number.isFinite(m))return ''; const ap=h>=12?'PM':'AM', hh=(h%12)||12; return `${hh}:${String(m).padStart(2,'0')} ${ap}`}
+  function localDateISO(d){const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)}
+  function todayISO(){return localDateISO(new Date())}
+  function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('#toastRoot').appendChild(t);setTimeout(()=>t.remove(),2800)}
+  function showError(msg){const el=$('#authError');el.textContent=msg;el.classList.remove('hidden')}
+  function hideError(){$('#authError').classList.add('hidden')}
+  function setBusy(btn,busy,label){if(!btn)return;btn.disabled=busy;if(busy){btn.dataset.original=btn.textContent;btn.textContent=label||'Working…'}else if(btn.dataset.original){btn.textContent=btn.dataset.original}}
+  function setTheme(){document.documentElement.dataset.theme=state.theme==='dark'?'dark':'light';$('#themeBtn').textContent=state.theme==='dark'?'☀️':'☾';localStorage.setItem('together-theme',state.theme)}
+  function uuid(){return crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now()}
+
+  // ---------- IndexedDB offline queue ----------
+  function idb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(QUEUE_DB,1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('queue'))db.createObjectStore('queue',{keyPath:'qid',autoIncrement:true});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+  async function queueAdd(item){try{const db=await idb();await new Promise((res,rej)=>{const tx=db.transaction('queue','readwrite');tx.objectStore('queue').add({...item,queued_at:new Date().toISOString()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});syncStatus('offline')}catch(e){console.warn(e)}}
+  async function queueAll(){try{const db=await idb();return await new Promise((res,rej)=>{const tx=db.transaction('queue','readonly');const rq=tx.objectStore('queue').getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error)})}catch(e){return[]}}
+  async function queueDelete(qid){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('queue','readwrite');tx.objectStore('queue').delete(qid);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+  async function flushQueue(){if(!navigator.onLine||!supabase||!state.session)return;const items=await queueAll();for(const q of items){try{let err=null;if(q.op==='insert'){const payload={...q.payload,couple_id:state.couple.id};const r=await supabase.from(q.table).insert(payload);err=r.error}else if(q.op==='update'){const r=await supabase.from(q.table).update(q.payload).eq('id',q.id).eq('couple_id',state.couple.id);err=r.error}else if(q.op==='delete'){const r=await supabase.from(q.table).delete().eq('id',q.id).eq('couple_id',state.couple.id);err=r.error}if(!err)await queueDelete(q.qid);else console.warn('Sync failed',q,err.message)}catch(e){console.warn(e)}}await loadData();syncStatus('online')}
+  function cacheSave(){localStorage.setItem(CACHE_KEY,JSON.stringify({couple:state.couple,data:state.data,profile:state.profile}))}
+  function cacheLoad(){try{const x=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(x){state.couple=x.couple;state.profile=x.profile;TABLES.forEach(k=>state.data[k]=x.data?.[k]||[])}}catch(e){}}
+
+  function syncStatus(kind){const online=navigator.onLine&&!!state.session;const pill=$('#syncPill'),dot=$('#onlineDot');if(!pill)return;if(!online){pill.textContent='🟠 Offline';dot?.classList.add('off');return}pill.textContent=kind==='syncing'?'🟡 Syncing…':'🟢 Synced';dot?.classList.remove('off')}
+
+  // ---------- Supabase ----------
+  function configured(){return CONFIG.SUPABASE_URL.startsWith('http')&&CONFIG.SUPABASE_ANON_KEY.length>20&&window.supabase}
+  async function init(){
+    setTheme();
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.warn);
+    if(!configured()){$('#boot').classList.add('hidden');$('#authView').classList.remove('hidden');showError('Supabase is not configured yet. Open index.html and replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY.');bindAuth();return}
+    supabase=window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    supabase.auth.onAuthStateChange(async(_event,session)=>{state.session=session;state.user=session?.user||null;if(session){cacheLoad();await bootstrap();}else{showAuth();}});
+    const {data:{session}}=await supabase.auth.getSession();state.session=session;state.user=session?.user||null;
+    if(session){cacheLoad();await bootstrap()}else showAuth();
+    window.addEventListener('online',()=>{syncStatus('syncing');flushQueue();loadData()});window.addEventListener('offline',()=>syncStatus('offline'));
+    bindAuth();
+  }
+  async function bootstrap(){
+    hideAuth();
+    if(!state.profile){const r=await supabase.from('profiles').select('*').eq('user_id',state.user.id).maybeSingle();if(r.data)state.profile=r.data;else if(r.error)console.warn(r.error)}
+    if(!state.profile){showApp();toast('Your profile is still being created. Refresh in a moment.');return}
+    const r=await supabase.from('couples').select('*').eq('id',state.profile.couple_id).maybeSingle();if(r.data)state.couple=r.data;else if(r.error)console.warn(r.error);
+    await loadData();subscribeRealtime();showApp();flushQueue();checkReminders();
+  }
+  async function loadData(){if(!supabase||!state.couple)return;syncStatus('syncing');for(const table of TABLES){try{const {data,error}=await supabase.from(table).select('*').eq('couple_id',state.couple.id).order('created_at',{ascending:false});if(!error)state.data[table]=data||[]}catch(e){console.warn(e)}}cacheSave();renderAll();syncStatus('online')}
+  function subscribeRealtime(){if(realtimeChannel||!supabase||!state.couple)return;realtimeChannel=supabase.channel('couple-data-'+state.couple.id);TABLES.forEach(table=>{realtimeChannel.on('postgres_changes',{event:'*',schema:'public',table,filter:`couple_id=eq.${state.couple.id}`},payload=>{const arr=state.data[table];if(payload.eventType==='INSERT'){if(!arr.some(x=>x.id===payload.new.id))arr.unshift(payload.new)}else if(payload.eventType==='UPDATE'){const i=arr.findIndex(x=>x.id===payload.new.id);if(i>=0)arr[i]=payload.new;else arr.unshift(payload.new)}else if(payload.eventType==='DELETE'){state.data[table]=arr.filter(x=>x.id!==payload.old.id)}cacheSave();renderAll();checkReminders()})});realtimeChannel.subscribe((status)=>syncStatus(status==='SUBSCRIBED'?'online':'offline'))}
+  async function insert(table,payload){const row={id:payload.id||uuid(),couple_id:state.couple.id,...payload};row.created_at=row.created_at||new Date().toISOString();if(!navigator.onLine){state.data[table].unshift(row);cacheSave();renderAll();await queueAdd({op:'insert',table,payload:row});toast('Saved on this device. Will sync when online.','ok');return row}const {data,error}=await supabase.from(table).insert(row).select().single();if(error){await queueAdd({op:'insert',table,payload:row});state.data[table].unshift(row);cacheSave();renderAll();toast('Saved locally; sync will retry.','ok');return row}state.data[table].unshift(data);cacheSave();renderAll();return data}
+  async function update(table,id,payload){const idx=state.data[table].findIndex(x=>x.id===id);if(idx>=0)state.data[table][idx]={...state.data[table][idx],...payload};cacheSave();renderAll();if(!navigator.onLine){await queueAdd({op:'update',table,id,payload});toast('Updated offline; will sync later.','ok');return}const {data,error}=await supabase.from(table).update({...payload,updated_at:new Date().toISOString()}).eq('id',id).eq('couple_id',state.couple.id).select().single();if(error){await queueAdd({op:'update',table,id,payload});toast('Updated locally; sync will retry.','ok');return}if(idx>=0)state.data[table][idx]=data;cacheSave();renderAll()}
+  async function remove(table,id){if(!confirm('Delete this item?\n\nThis action cannot be undone.'))return;state.data[table]=state.data[table].filter(x=>x.id!==id);cacheSave();renderAll();if(!navigator.onLine){await queueAdd({op:'delete',table,id});toast('Deleted offline; will sync later.','ok');return}const {error}=await supabase.from(table).delete().eq('id',id).eq('couple_id',state.couple.id);if(error){await queueAdd({op:'delete',table,id});toast('Deleted locally; sync will retry.','ok');return}toast('Deleted','ok')}
+
+  // ---------- Auth/UI shells ----------
+  function bindAuth(){
+    $('#loginTab').onclick=()=>authMode('login');$('#signupTab').onclick=()=>authMode('signup');
+    $('#loginForm').onsubmit=async e=>{e.preventDefault();hideError();const b=e.submitter;setBusy(b,true,'Signing in…');const {error}=await supabase.auth.signInWithPassword({email:$('#loginEmail').value.trim(),password:$('#loginPassword').value});setBusy(b,false);if(error)showError(error.message);};
+    $('#signupForm').onsubmit=async e=>{e.preventDefault();hideError();if($('#signupPassword').value!==$('#signupConfirm').value){showError('Passwords do not match.');return}const b=e.submitter;setBusy(b,true,'Creating…');const {data,error}=await supabase.auth.signUp({email:$('#signupEmail').value.trim(),password:$('#signupPassword').value,options:{data:{couple_name:$('#signupCouple').value.trim(),display_name:$('#signupCouple').value.trim()}}});setBusy(b,false);if(error){showError(error.message);return}if(!data.session)showError('Account created. Check your email if confirmation is enabled, then log in.');else toast('Welcome to Together ❤️','ok');};
+    $('#forgotBtn').onclick=async()=>{const email=$('#loginEmail').value.trim();if(!email){showError('Enter your email first.');return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)showError(error.message);else toast('Password reset email sent.','ok')}
+  }
+  function authMode(mode){hideError();$('#loginTab').classList.toggle('active',mode==='login');$('#signupTab').classList.toggle('active',mode==='signup');$('#loginForm').classList.toggle('hidden',mode!=='login');$('#signupForm').classList.toggle('hidden',mode!=='signup')}
+  function showAuth(){$('#boot').classList.add('hidden');$('#appView').classList.add('hidden');$('#authView').classList.remove('hidden');authMode('login')}
+  function hideAuth(){$('#authView').classList.add('hidden');$('#appView').classList.remove('hidden');$('#boot').classList.add('hidden')}
+  function showApp(){hideAuth();renderAll()}
+
+  function renderNav(){
+    const side=$('#sideNav');side.innerHTML='';nav.forEach(([id,ico,label])=>{const b=document.createElement('button');b.className='nav-btn '+(state.current===id?'active':'');b.innerHTML=`<span>${ico}</span>${label}`;b.onclick=()=>go(id);side.appendChild(b)});
+    const mob=$('#mobileNav');mob.innerHTML='';nav.forEach(([id,ico,label])=>{const b=document.createElement('button');b.className=state.current===id?'active':'';b.innerHTML=`<span>${ico}</span>${label}`;b.onclick=()=>go(id);mob.appendChild(b)})
+  }
+  function go(screen){if(screen==='more')screen='more';state.current=screen;const titles={home:'Home',calendar:'Calendar',dates:'Dates',goals:'Goals',expenses:'Expenses',memories:'Memories',wishlist:'Wishlist',tasks:'Tasks',notifications:'Notifications',settings:'Settings',more:'More'};$('#pageTitle').textContent=titles[screen]||'Together';$$('.screen').forEach(x=>x.classList.remove('active'));const el=$(`#screen-${screen}`);if(el)el.classList.add('active');renderAll();}
+  function openModal(title,html,onSubmit){modalOnSubmit=onSubmit;$('#modalRoot').innerHTML=`<div class="modal-backdrop" id="modalBackdrop"><div class="modal" role="dialog" aria-modal="true"><div class="modal-head"><div class="modal-title">${title}</div><button class="icon-btn" id="closeModal" type="button">✕</button></div><form id="modalForm" class="form-grid">${html}<div class="modal-actions"><button class="secondary-btn" type="button" id="cancelModal">Cancel</button><button class="primary-btn" type="submit">Save</button></div></form></div></div>`;$('#closeModal').onclick=closeModal;$('#cancelModal').onclick=closeModal;$('#modalForm').onsubmit=async e=>{e.preventDefault();await modalOnSubmit?.(new FormData(e.currentTarget),e.currentTarget);};}
+  function closeModal(){modalOnSubmit=null;$('#modalRoot').innerHTML=''}
+  function field(label,name,type='text',value='',extra=''){return `<div class="field"><label for="f_${name}">${label}</label><input id="f_${name}" name="${name}" type="${type}" value="${esc(value)}" ${extra}></div>`}
+  function selectField(label,name,options,value=''){return `<div class="field"><label for="f_${name}">${label}</label><select id="f_${name}" name="${name}">${options.map(o=>`<option ${String(o)===String(value)?'selected':''} value="${esc(o)}">${esc(o)}</option>`).join('')}</select></div>`}
+  function textareaField(label,name,value=''){return `<div class="field"><label for="f_${name}">${label}</label><textarea id="f_${name}" name="${name}">${esc(value)}</textarea></div>`}
+
+  // ---------- Home ----------
+  function relationshipDuration(start){if(!start)return 'Set your relationship start date';const s=new Date(start+'T00:00:00');const n=new Date();if(Number.isNaN(s.getTime()))return '';let years=n.getFullYear()-s.getFullYear(),months=n.getMonth()-s.getMonth(),days=n.getDate()-s.getDate();if(days<0){months--;const prev=new Date(n.getFullYear(),n.getMonth(),0);days+=prev.getDate()}if(months<0){years--;months+=12}if(s>n)return 'Starts in '+Math.abs(Math.ceil((s-n)/86400000))+' days';return `${years} year${years!==1?'s':''} ${months} month${months!==1?'s':''} ${days} day${days!==1?'s':''}`}
+  function shiftDateISO(iso,recurring,count){const d=new Date(iso+'T00:00:00');if(Number.isNaN(d.getTime()))return iso;if(recurring==='weekly')d.setDate(d.getDate()+7*count);else if(recurring==='monthly')d.setMonth(d.getMonth()+count);else if(recurring==='yearly')d.setFullYear(d.getFullYear()+count);return localDateISO(d)}
+  function expandedEvents(startISO,endISO){const start=new Date(startISO+'T00:00:00'),end=new Date(endISO+'T00:00:00');const out=[];for(const e of state.data.events){const base=e.event_date;if(!base)continue;const r=e.recurring||'none';if(r==='none'){const d=new Date(base+'T00:00:00');if(d>=start&&d<=end)out.push({...e});continue}for(let i=0;i<240;i++){const dt=shiftDateISO(base,r,i);const d=new Date(dt+'T00:00:00');if(d>end)break;if(d>=start)out.push({...e,event_date:dt,occurrence_index:i,source_event_id:e.id});}}return out}
+  function upcomingEvents(){const today=new Date();const end=new Date(today.getFullYear()+2,today.getMonth(),today.getDate());return expandedEvents(todayISO(),localDateISO(end)).filter(e=>new Date((e.event_date||'9999-12-31')+'T'+(e.start_time||'00:00')).getTime()>=Date.now()-24*3600*1000).sort((a,b)=>`${a.event_date||''} ${a.start_time||''}`.localeCompare(`${b.event_date||''} ${b.start_time||''}`))}
+  function renderHome(){const el=$('#screen-home');if(!el)return;const ev=upcomingEvents()[0];const month=new Date().toISOString().slice(0,7);const spent=state.data.expenses.filter(x=>(x.expense_date||'').startsWith(month)).reduce((a,x)=>a+(+x.amount||0),0);const activeGoal=state.data.goals.find(g=>(+g.current_amount||0)<(+g.target_amount||0));const tasks=state.data.date_tasks.filter(t=>!t.completed).length;const dn=state.couple?.couple_name||'You two';
+    el.innerHTML=`<div class="grid" style="gap:16px">
+      <div class="hero"><div class="hero-inner"><div class="hero-kicker">Your shared space ❤️</div><h1>${esc(dn)}</h1><p>${state.couple?.relationship_start_date?`Together since ${dateFmt(state.couple.relationship_start_date,{year:'numeric',month:'long',day:'numeric'})}`:'Add your relationship start date in Settings.'}</p><div style="margin-top:14px"><span class="chip" style="background:rgba(255,239,179,.18);color:#FFEFB3">${esc(relationshipDuration(state.couple?.relationship_start_date))}</span></div></div></div>
+      ${ev?`<div class="next-card"><div class="next-top"><span class="chip">❤️ NEXT UP</span><button class="icon-btn" onclick="app.editEvent('${ev.id}')">✎</button></div><div class="next-title">${esc(ev.title)}</div><div class="date-big">${dateFmt(ev.event_date)} ${timeFmt(ev.start_time)?'• '+timeFmt(ev.start_time):''}</div><div class="next-sub">${esc(ev.location||ev.category||'A moment together')}${ev.description?' · '+esc(ev.description):''}</div></div>`:`<div class="card empty"><div class="empty-ico">❤️</div><h3>Nothing planned yet</h3><p>Start planning your next moment together.</p><button class="primary-btn" onclick="app.openEvent()">Plan a Date</button></div>`}
+      <div><div class="section-head"><h2 class="section-title">Quick actions</h2></div><div class="quick-grid">${[['❤️','Add Date','dates'],['📅','Add Event','calendar'],['💰','Add Expense','expenses'],['🎯','Add Goal','goals'],['📝','Add Task','tasks'],['💌','Add Memory','memories']].map(x=>`<button class="quick-btn" onclick="app.quick('${x[2]}')"><span>${x[0]}</span>${x[1]}</button>`).join('')}</div></div>
+      <div class="grid grid-4"><div class="stat"><div class="stat-label">Monthly date spending</div><div class="stat-value">${money(spent)}</div></div><div class="stat"><div class="stat-label">Active goal</div><div class="stat-value">${activeGoal?Math.round((+activeGoal.current_amount||0)/(+activeGoal.target_amount||1)*100):0}%</div><div class="small muted">${activeGoal?esc(activeGoal.title):'Create a goal'}</div></div><div class="stat"><div class="stat-label">Pending tasks</div><div class="stat-value">${tasks}</div></div><div class="stat"><div class="stat-label">Upcoming moments</div><div class="stat-value">${upcomingEvents().length}</div></div></div>
+      <div class="grid grid-2"><div class="card notes-card"><div class="section-head"><h2 class="section-title">Love Note 💌</h2><button class="icon-btn" onclick="app.addNote()">+</button></div><div id="loveNoteBody">${esc(state.data.notifications.filter(n=>n.type==='love_note')[0]?.message||'Write a little something sweet for each other.')}</div></div><div class="card"><div class="section-head"><h2 class="section-title">🎲 Surprise Us</h2></div><div class="muted" id="ideaText">Press the button for a random date idea.</div><button class="secondary-btn" style="margin-top:12px" onclick="app.surprise()">Surprise Us</button></div></div>
+    </div>`}
+
+  // ---------- Calendar ----------
+  function renderCalendar(){const el=$('#screen-calendar');const d=state.calendarDate;const y=d.getFullYear(),m=d.getMonth();const first=new Date(y,m,1),start=(first.getDay()+6)%7;const days=new Date(y,m+1,0).getDate();const prevDays=new Date(y,m,0).getDate();const monthStart=`${y}-${String(m+1).padStart(2,'0')}-01`;const monthEnd=`${y}-${String(m+1).padStart(2,'0')}-${String(days).padStart(2,'0')}`;const eventDates=new Set(expandedEvents(monthStart,monthEnd).map(e=>e.event_date));let cells='';const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];names.forEach(n=>cells+=`<div class="cal-name">${n}</div>`);for(let i=0;i<42;i++){const day=i-start+1;let cls='cal-cell', label=day;if(day<=0){label=prevDays+day;cls+=' out';}else if(day>days){label=day-days;cls+=' out';}else{const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;if(iso===todayISO())cls+=' today';if(iso===state.selectedDate)cls+=' selected';cells+=`<button class="${cls}" onclick="app.selectDay('${iso}')">${label}${eventDates.has(iso)?'<span class="cal-dot"></span>':''}</button>`;continue}cells+=`<div class="${cls}">${label}</div>`;}
+    const selected=(state.selectedDate||todayISO());const ev=expandedEvents(selected,selected).filter(e=>e.event_date===selected).sort((a,b)=>(a.start_time||'').localeCompare(b.start_time||''));el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Shared calendar</h2><div class="muted small">Plan dates, milestones, trips and recurring moments.</div></div><button class="primary-btn" onclick="app.openEvent()">+ Event</button></div><div class="card"><div class="calendar-head"><button class="icon-btn" onclick="app.moveMonth(-1)">‹</button><div class="month-label">${d.toLocaleDateString('en-PH',{month:'long',year:'numeric'})}</div><button class="icon-btn" onclick="app.moveMonth(1)">›</button></div><div class="cal-grid">${cells}</div></div><div class="card" style="margin-top:14px"><div class="section-head"><div><h3 style="margin:0">${dateFmt(selected,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</h3></div><span class="chip">${ev.length} event${ev.length!==1?'s':''}</span></div>${ev.length?`<div class="list">${ev.map(eventCard).join('')}</div>`:`<div class="empty"><div class="empty-ico">📅</div><h3>No events here</h3><p>Add a moment for this day.</p><button class="secondary-btn" onclick="app.openEvent(null,'${selected}')">+ Add Event</button></div>`}</div>`}
+  function eventCard(e){const [ico,label]=categoryMap[e.category]||categoryMap.other;return `<div class="list-item"><div class="item-main"><div class="item-icon">${ico}</div><div class="item-copy"><div class="item-title">${esc(e.title)}</div><div class="item-meta">${label}${e.start_time?' · '+timeFmt(e.start_time):''}${e.location?' · '+esc(e.location):''}</div></div></div><div class="item-actions"><button class="icon-btn" onclick="app.editEvent('${e.id}')">✎</button><button class="icon-btn" onclick="app.remove('events','${e.id}')">⌫</button></div></div>`}
+
+  // ---------- Dates ----------
+  function renderDates(){const el=$('#screen-dates');const dates=[...state.data.date_plans].sort((a,b)=>(a.date||'').localeCompare(b.date||''));el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Dates ❤️</h2><div class="muted small">Turn a calendar moment into a full plan.</div></div><button class="primary-btn" onclick="app.openDate()">+ Plan Date</button></div>${dates.length?`<div class="list">${dates.map(datePlanCard).join('')}</div>`:`<div class="card empty"><div class="empty-ico">🍝</div><h3>Your next date starts here</h3><p>Set the plan, budget and preparation checklist.</p><button class="primary-btn" onclick="app.openDate()">Plan a Date</button></div>`}`}
+  function datePlanCard(x){const pct=Math.max(0,Math.min(100,(+x.actual_spending||0)/Math.max(1,+x.estimated_budget||1)*100));const tasks=state.data.date_tasks.filter(t=>t.date_plan_id===x.id);return `<div class="card"><div class="section-head"><div><div class="item-title">${esc(x.title)}</div><div class="item-meta">${dateFmt(x.date)}${x.time?' · '+timeFmt(x.time):''}${x.location?' · '+esc(x.location):''}</div></div><div class="item-actions"><button class="icon-btn" onclick="app.editDate('${x.id}')">✎</button><button class="icon-btn" onclick="app.remove('date_plans','${x.id}')">⌫</button></div></div>${x.description?`<p class="muted" style="margin:0 0 10px">${esc(x.description)}</p>`:''}<div class="grid grid-2"><div><div class="small muted">Budget</div><strong>${money(x.estimated_budget)}</strong></div><div><div class="small muted">Spent</div><strong>${money(x.actual_spending)}</strong></div></div><div style="margin-top:12px"><div class="progress"><span style="width:${pct}%"></span></div><div class="tiny muted" style="margin-top:5px">${pct>100?'Over budget':money(Math.max(0,(+x.estimated_budget||0)-(+x.actual_spending||0)))+' remaining'}</div></div><div style="margin-top:14px"><div class="section-head"><strong>Preparation</strong><button class="secondary-btn" onclick="app.openTask(null,'${x.id}')">+ Task</button></div>${tasks.length?`<div class="list">${tasks.map(taskCard).join('')}</div>`:`<div class="small muted">No tasks yet.</div>`}</div></div>`}
+  function taskCard(t){return `<div class="list-item"><label style="display:flex;align-items:center;gap:10px;flex:1"><input type="checkbox" ${t.completed?'checked':''} onchange="app.toggleTask('${t.id}',this.checked)"><span style="${t.completed?'text-decoration:line-through;opacity:.55':''}">${esc(t.title)}</span></label><button class="icon-btn" onclick="app.remove('date_tasks','${t.id}')">⌫</button></div>`}
+
+  // ---------- Goals ----------
+  function renderGoals(){const el=$('#screen-goals');el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Shared Goals 🎯</h2><div class="muted small">Save toward something you both care about.</div></div><button class="primary-btn" onclick="app.openGoal()">+ Goal</button></div>${state.data.goals.length?`<div class="grid grid-2">${state.data.goals.map(goalCard).join('')}</div>`:`<div class="card empty"><div class="empty-ico">🎯</div><h3>Create your first goal</h3><p>Trips, gifts, savings, or relationship milestones.</p><button class="primary-btn" onclick="app.openGoal()">Create Goal</button></div>`}`}
+  function goalCard(g){const pct=Math.max(0,Math.min(100,(+g.current_amount||0)/Math.max(1,+g.target_amount||1)*100));const contrib=state.data.goal_contributions.filter(c=>c.goal_id===g.id).sort((a,b)=>(b.contributed_on||'').localeCompare(a.contributed_on||''));return `<div class="card"><div class="section-head"><div><div class="item-title">${esc(g.title)}</div><div class="item-meta">${g.target_date?dateFmt(g.target_date):'No target date'}</div></div><div class="item-actions"><button class="icon-btn" onclick="app.editGoal('${g.id}')">✎</button><button class="icon-btn" onclick="app.remove('goals','${g.id}')">⌫</button></div></div>${g.description?`<p class="muted small">${esc(g.description)}</p>`:''}<div style="display:flex;justify-content:space-between;gap:10px;margin:10px 0"><strong>${money(g.current_amount)}</strong><span class="muted small">of ${money(g.target_amount)}</span></div><div class="progress"><span style="width:${pct}%"></span></div><div class="tiny muted" style="margin-top:6px">${Math.round(pct)}% complete</div><button class="secondary-btn" style="margin-top:13px" onclick="app.addContribution('${g.id}')">+ Contribution</button>${contrib.length?`<div style="margin-top:14px"><div class="small" style="font-weight:800;margin-bottom:7px">Recent contributions</div><div class="list">${contrib.slice(0,4).map(c=>`<div class="list-item"><div>${money(c.amount)}</div><div class="item-meta">${dateFmt(c.contributed_on)}${c.note?' · '+esc(c.note):''}</div></div>`).join('')}</div></div>`:''}</div>`}
+
+  // ---------- Expenses ----------
+  function renderExpenses(){const el=$('#screen-expenses');const month=new Date().toISOString().slice(0,7);const monthExpenses=state.data.expenses.filter(x=>(x.expense_date||'').startsWith(month));const total=monthExpenses.reduce((a,x)=>a+(+x.amount||0),0);const cats={};monthExpenses.forEach(x=>cats[x.category]=(cats[x.category]||0)+(+x.amount||0));const rows=Object.entries(cats).sort((a,b)=>b[1]-a[1]);el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Expenses 💰</h2><div class="muted small">A private shared expense planner, not a banking app.</div></div><button class="primary-btn" onclick="app.openExpense()">+ Expense</button></div><div class="grid grid-2"><div class="stat"><div class="stat-label">This month</div><div class="stat-value">${money(total)}</div></div><div class="card"><div class="stat-label">Category breakdown</div>${rows.length?rows.map(([c,v])=>`<div style="margin-top:10px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>${esc(c)}</span><strong>${money(v)}</strong></div><div class="progress" style="margin-top:4px"><span style="width:${total?Math.min(100,v/total*100):0}%"></span></div></div>`).join(''):'<div class="small muted" style="margin-top:8px">No spending this month.</div>'}</div></div>${monthExpenses.length?`<div class="card" style="margin-top:14px"><div class="section-head"><h3 style="margin:0">Recent expenses</h3><span class="chip">${monthExpenses.length}</span></div><div class="list">${monthExpenses.map(x=>`<div class="list-item"><div class="item-main"><div class="item-icon">${expenseIcon(x.category)}</div><div class="item-copy"><div class="item-title">${esc(x.name)}</div><div class="item-meta">${esc(x.category)} · ${dateFmt(x.expense_date)}${x.notes?' · '+esc(x.notes):''}</div></div></div><div class="item-actions"><strong>${money(x.amount)}</strong><button class="icon-btn" onclick="app.editExpense('${x.id}')">✎</button><button class="icon-btn" onclick="app.remove('expenses','${x.id}')">⌫</button></div></div>`).join('')}</div></div>`:`<div class="card empty" style="margin-top:14px"><div class="empty-ico">💰</div><h3>No expenses yet</h3><p>Track the cost of your next date or trip.</p><button class="secondary-btn" onclick="app.openExpense()">Add Expense</button></div>`}`}
+  function expenseIcon(cat){return {Food:'🍽️',Entertainment:'🎬',Transportation:'🚗',Gifts:'🎁',Travel:'✈️',Hotel:'🏨',Shopping:'🛍️',Other:'❤️'}[cat]||'💰'}
+
+  // ---------- Memories ----------
+  function renderMemories(){const el=$('#screen-memories');el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Memories 📸</h2><div class="muted small">Keep the little moments you never want to forget.</div></div><button class="primary-btn" onclick="app.openMemory()">+ Memory</button></div>${state.data.memories.length?`<div class="grid grid-2">${state.data.memories.map(m=>`<div class="card"><div style="border-radius:19px;overflow:hidden;background:var(--accent-light);min-height:170px;display:grid;place-items:center;margin-bottom:13px">${m.image_url?`<img src="${esc(m.image_url)}" alt="${esc(m.title)}" style="width:100%;height:220px;object-fit:cover">`:'<div style="font-size:52px">❤️</div>'}</div><div class="section-head"><div><div class="item-title">${esc(m.title)}</div><div class="item-meta">${dateFmt(m.memory_date)}</div></div><div class="item-actions"><button class="icon-btn" onclick="app.editMemory('${m.id}')">✎</button><button class="icon-btn" onclick="app.remove('memories','${m.id}')">⌫</button></div></div><p class="muted" style="margin:8px 0 0">${esc(m.note||'')}</p></div>`).join('')}</div>`:`<div class="card empty"><div class="empty-ico">📸</div><h3>Save your first memory</h3><p>Notes, special dates, favorite places, and photos.</p><button class="primary-btn" onclick="app.openMemory()">Add Memory</button></div>`}`}
+
+  // ---------- Wishlist ----------
+  function renderWishlist(){const el=$('#screen-wishlist');const pending=state.data.wishlist.filter(x=>!x.completed),done=state.data.wishlist.filter(x=>x.completed);el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Wishlist 🎁</h2><div class="muted small">Ideas for places, movies, gifts, activities, and things to buy.</div></div><button class="primary-btn" onclick="app.openWish()">+ Item</button></div>${state.data.wishlist.length?`<div class="list">${pending.map(wishCard).join('')}${done.length?`<div class="small muted" style="margin:8px 0 0">Completed</div>${done.map(wishCard).join('')}`:''}</div>`:`<div class="card empty"><div class="empty-ico">🎁</div><h3>Make a wish list</h3><p>Keep your couple ideas in one place.</p><button class="primary-btn" onclick="app.openWish()">Add Item</button></div>`}`}
+  function wishCard(w){return `<div class="list-item"><div class="item-main"><div class="item-icon">${w.completed?'✅':'🎁'}</div><div class="item-copy"><div class="item-title" style="${w.completed?'text-decoration:line-through;opacity:.55':''}">${esc(w.title)}</div><div class="item-meta">${esc(w.category)} · ${esc(w.priority)}${w.notes?' · '+esc(w.notes):''}</div></div></div><div class="item-actions"><button class="icon-btn" onclick="app.toggleWish('${w.id}',${!w.completed})">${w.completed?'↩':'✓'}</button><button class="icon-btn" onclick="app.editWish('${w.id}')">✎</button><button class="icon-btn" onclick="app.remove('wishlist','${w.id}')">⌫</button></div></div>`}
+
+  // ---------- Tasks / Notifications / Settings / More ----------
+  function renderTasks(){const el=$('#screen-tasks');const tasks=[...state.data.date_tasks].sort((a,b)=>Number(a.completed)-Number(b.completed));el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Tasks 📝</h2><div class="muted small">Shared preparation and to-dos.</div></div><button class="primary-btn" onclick="app.openTask()">+ Task</button></div>${tasks.length?`<div class="card"><div class="list">${tasks.map(t=>`<div class="list-item"><label style="display:flex;align-items:center;gap:10px;flex:1"><input type="checkbox" ${t.completed?'checked':''} onchange="app.toggleTask('${t.id}',this.checked)"><div><div style="font-weight:800;${t.completed?'text-decoration:line-through;opacity:.55':''}">${esc(t.title)}</div><div class="item-meta">${t.date_plan_id?'Linked to a date':'General task'}</div></div></label><button class="icon-btn" onclick="app.remove('date_tasks','${t.id}')">⌫</button></div>`).join('')}</div></div>`:`<div class="card empty"><div class="empty-ico">📝</div><h3>No unfinished plans</h3><p>Add a task for your next date or trip.</p><button class="secondary-btn" onclick="app.openTask()">Add Task</button></div>`}`}
+  function renderNotifications(){const el=$('#screen-notifications');const ns=[...state.data.notifications].sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));el.innerHTML=`<div class="section-head"><div><h2 class="section-title">Notifications 🔔</h2><div class="muted small">In-app reminders and shared notes.</div></div><button class="secondary-btn" onclick="app.requestNotifications()">Enable Alerts</button></div>${ns.length?`<div class="list">${ns.map(n=>`<div class="list-item"><div class="item-main"><div class="item-icon">${n.type==='love_note'?'💌':'🔔'}</div><div class="item-copy"><div class="item-title">${esc(n.title||'Together')}</div><div class="item-meta">${esc(n.message||'')}${n.remind_at?' · '+dateFmt(n.remind_at.slice(0,10)):''}</div></div></div>${n.type==='love_note'?`<button class="icon-btn" onclick="app.remove('notifications','${n.id}')">⌫</button>`:''}</div>`).join('')}</div>`:`<div class="card empty"><div class="empty-ico">🔔</div><h3>No notifications yet</h3><p>Enable alerts to receive browser notifications where supported.</p><button class="primary-btn" onclick="app.requestNotifications()">Enable Alerts</button></div>`}`}
+  function renderSettings(){const c=state.couple||{},p=state.profile||{},email=state.user?.email||'';const prefs=JSON.parse(localStorage.getItem('together-prefs')||'{"event":true,"anniversary":true,"date":true,"task":true,"goal":true,"budget":true}');$('#screen-settings').innerHTML=`<div class="section-head"><div><h2 class="section-title">Settings ⚙️</h2><div class="muted small">Keep the shared space up to date.</div></div></div><div class="grid grid-2"><div class="card"><h3 style="margin:0 0 12px">Couple</h3><div class="form-grid">${field('Couple Name','couple_name','text',c.couple_name||'')}${field('Relationship Start','relationship_start_date','date',c.relationship_start_date||'')}</div><button class="primary-btn" style="margin-top:14px" onclick="app.saveCouple()">Save Couple</button></div><div class="card"><h3 style="margin:0 0 12px">Account</h3><div class="list"><div class="setting-row"><div class="setting-copy"><strong>Email</strong><span>${esc(email)}</span></div></div><div class="setting-row"><div class="setting-copy"><strong>Display name</strong><span>${esc(p.display_name||'Shared account')}</span></div><button class="icon-btn" onclick="app.editProfile()">✎</button></div><div class="setting-row"><div class="setting-copy"><strong>Log out</strong><span>End this session on this device.</span></div><button class="secondary-btn" onclick="app.logout()">Log Out</button></div><div class="setting-row"><div class="setting-copy"><strong>Delete account data</strong><span>Irreversible shared data deletion.</span></div><button class="danger-btn" onclick="app.deleteAccount()">Delete</button></div></div></div></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 12px">Notifications</h3><div class="settings-list">${Object.entries({event:'Event reminders',anniversary:'Anniversary reminders',date:'Date reminders',task:'Task reminders',goal:'Goal reminders',budget:'Budget alerts'}).map(([k,l])=>`<div class="setting-row"><div class="setting-copy"><strong>${l}</strong></div><button class="switch ${prefs[k]!==false?'on':''}" onclick="app.togglePref('${k}',this.classList.contains('on')===false)"></button></div>`).join('')}</div><div class="small muted" style="margin-top:10px">Browser notifications depend on OS/browser permissions. Web Push delivery requires a server-side push endpoint.</div></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 8px">Appearance</h3><button class="secondary-btn" onclick="app.toggleTheme()">${state.theme==='dark'?'Use Light Mode':'Use Dark Mode'}</button><div class="small muted" style="margin-top:10px">App version 1.0.0 · PWA edition</div></div>`}
+  function renderMore(){const el=$('#screen-home');const temp=document.getElementById('screen-more');if(temp)return;}
+
+  // Create More as a temporary navigation screen in Home section isn't ideal; route to settings? We'll render More using an overlay screen dynamically.
+  function renderMoreScreen(){let el=$('#screen-more');if(!el){el=document.createElement('section');el.id='screen-more';el.className='screen';$('.content').appendChild(el)}el.innerHTML=`<div class="section-head"><div><h2 class="section-title">More</h2><div class="muted small">Everything else you share.</div></div></div><div class="more-grid">${moreCards.map(([id,ico,label,sub])=>`<button class="more-card" onclick="app.go('${id}')"><div class="ico">${ico}</div><div><strong>${label}</strong><span>${sub}</span></div></button>`).join('')}</div>`;}
+
+  function renderAll(){if(!state.couple)return;renderNav();renderHome();renderCalendar();renderDates();renderGoals();renderExpenses();renderMemories();renderWishlist();renderTasks();renderNotifications();renderSettings();renderMoreScreen();$$('.screen').forEach(x=>x.classList.toggle('active',x.id==='screen-'+state.current));$('#pageTitle').textContent={home:'Home',calendar:'Calendar',dates:'Dates',goals:'Goals',expenses:'Expenses',memories:'Memories',wishlist:'Wishlist',tasks:'Tasks',notifications:'Notifications',settings:'Settings',more:'More'}[state.current]||'Home';}
+
+  // ---------- Forms ----------
+  function openEvent(id=null,date=todayISO()){const x=id?state.data.events.find(v=>v.id===id):null;const cats=Object.keys(categoryMap);openModal(id?'Edit Event':'Add Event',`${field('Title','title','text',x?.title||'','required')}${selectField('Category','category',cats.map(c=>c),x?.category||'date')}<div class="form-row">${field('Date','event_date','date',x?.event_date||date,'required')}${field('Start Time','start_time','time',x?.start_time||'')}</div><div class="form-row">${field('End Time','end_time','time',x?.end_time||'')}${field('Budget','budget','number',x?.budget||0,'min="0" step="0.01"')}</div>${field('Location','location','text',x?.location||'')}${textareaField('Description','description',x?.description||'')}${selectField('Reminder','reminder',['none','10m','1h','1d','1w'],x?.reminder||'none')}${selectField('Repeat','recurring',['none','weekly','monthly','yearly'],x?.recurring||'none')}` ,async(fd)=>{const p={title:fd.get('title').trim(),event_date:fd.get('event_date'),start_time:fd.get('start_time')||null,end_time:fd.get('end_time')||null,category:fd.get('category'),location:fd.get('location')||null,description:fd.get('description')||null,budget:Math.max(0,Number(fd.get('budget'))||0),reminder:fd.get('reminder'),recurring:fd.get('recurring'),updated_at:new Date().toISOString()};if(!p.title||!p.event_date)return toast('Please enter a title and date.','bad');id?await update('events',id,p):await insert('events',p);closeModal();toast(id?'Event updated':'Event added','ok')})}
+  function editEvent(id){openEvent(id)}
+  function openDate(id=null){const x=id?state.data.date_plans.find(v=>v.id===id):null;openModal(id?'Edit Date':'Plan a Date',`${field('Date Name','title','text',x?.title||'','required')}<div class="form-row">${field('Date','date','date',x?.date||todayISO(),'required')}${field('Time','time','time',x?.time||'')}</div>${field('Location','location','text',x?.location||'')}${textareaField('Description','description',x?.description||'')}<div class="form-row">${field('Estimated Budget','estimated_budget','number',x?.estimated_budget||0,'min="0" step="0.01"')}${field('Actual Spending','actual_spending','number',x?.actual_spending||0,'min="0" step="0.01"')}</div>${selectField('Status','status',['Planned','Confirmed','Completed','Cancelled'],x?.status||'Planned')}`,async(fd)=>{const p={title:fd.get('title').trim(),date:fd.get('date'),time:fd.get('time')||null,location:fd.get('location')||null,description:fd.get('description')||null,estimated_budget:Math.max(0,Number(fd.get('estimated_budget'))||0),actual_spending:Math.max(0,Number(fd.get('actual_spending'))||0),status:fd.get('status'),updated_at:new Date().toISOString()};if(!p.title||!p.date)return toast('Enter a date name and date.','bad');id?await update('date_plans',id,p):await insert('date_plans',p);closeModal();toast(id?'Date updated':'Date planned','ok')})}
+  function editDate(id){openDate(id)}
+  function openTask(id=null,datePlanId=null){const x=id?state.data.date_tasks.find(v=>v.id===id):null;const options=['General',...state.data.date_plans.map(d=>`${d.id}|${d.title}`)];openModal(id?'Edit Task':'Add Task',`${field('Task','title','text',x?.title||'','required')}${selectField('Date Plan','date_plan_choice',options,x?.date_plan_id||'General')}`,async(fd)=>{const chosen=fd.get('date_plan_choice');const p={title:fd.get('title').trim(),date_plan_id:chosen==='General'?null:(chosen.split('|')[0]||datePlanId||null),completed:x?.completed||false,updated_at:new Date().toISOString()};if(!p.title)return toast('Enter a task.','bad');id?await update('date_tasks',id,p):await insert('date_tasks',p);closeModal();toast('Task saved','ok')})}
+  function toggleTask(id,completed){update('date_tasks',id,{completed,updated_at:new Date().toISOString()})}
+  function openGoal(id=null){const x=id?state.data.goals.find(v=>v.id===id):null;openModal(id?'Edit Goal':'Create Goal',`${field('Goal Name','title','text',x?.title||'','required')}<div class="form-row">${field('Target Amount','target_amount','number',x?.target_amount||0,'min="0.01" step="0.01" required')}${field('Current Amount','current_amount','number',x?.current_amount||0,'min="0" step="0.01"')}</div>${field('Target Date','target_date','date',x?.target_date||'')}${textareaField('Description','description',x?.description||'')}`,async(fd)=>{const p={title:fd.get('title').trim(),target_amount:Math.max(.01,Number(fd.get('target_amount'))||0),current_amount:Math.max(0,Number(fd.get('current_amount'))||0),target_date:fd.get('target_date')||null,description:fd.get('description')||null,updated_at:new Date().toISOString()};if(!p.title)return toast('Enter a goal.','bad');id?await update('goals',id,p):await insert('goals',p);closeModal();toast(id?'Goal updated':'Goal created','ok')})}
+  function editGoal(id){openGoal(id)}
+  function addContribution(goalId){openModal('Add Contribution',`${field('Amount','amount','number','0','min="0.01" step="0.01" required')}${field('Date','contributed_on','date',todayISO(),'required')}${field('Note','note','text','')}`,async(fd)=>{const amount=Math.max(.01,Number(fd.get('amount'))||0);const g=state.data.goals.find(x=>x.id===goalId);if(!g)return;await insert('goal_contributions',{goal_id:goalId,amount,contributed_on:fd.get('contributed_on'),note:fd.get('note')||null});await update('goals',goalId,{current_amount:(+g.current_amount||0)+amount,updated_at:new Date().toISOString()});closeModal();toast('Contribution added','ok')})}
+  function openExpense(id=null){const x=id?state.data.expenses.find(v=>v.id===id):null;const dateOpts=['None',...state.data.date_plans.map(d=>`${d.id}|${d.title}`)];const eventOpts=['None',...state.data.events.map(d=>`${d.id}|${d.title}`)];openModal(id?'Edit Expense':'Add Expense',`${field('Expense Name','name','text',x?.name||'','required')}<div class="form-row">${field('Amount','amount','number',x?.amount||0,'min="0.01" step="0.01" required')}${field('Date','expense_date','date',x?.expense_date||todayISO(),'required')}</div>${selectField('Category','category',expenseCats,x?.category||'Food')}${selectField('Related Date','related_date',dateOpts,x?.related_date_plan_id||'None')}${selectField('Related Event','related_event',eventOpts,x?.related_event_id||'None')}${textareaField('Notes','notes',x?.notes||'')}`,async(fd)=>{const rd=fd.get('related_date'),re=fd.get('related_event');const p={name:fd.get('name').trim(),amount:Math.max(.01,Number(fd.get('amount'))||0),category:fd.get('category'),expense_date:fd.get('expense_date'),related_date_plan_id:rd==='None'?null:(rd.split('|')[0]||null),related_event_id:re==='None'?null:(re.split('|')[0]||null),notes:fd.get('notes')||null};if(!p.name||!p.expense_date)return toast('Enter a name and date.','bad');id?await update('expenses',id,p):await insert('expenses',p);closeModal();toast(id?'Expense updated':'Expense added','ok')})}
+  function editExpense(id){openExpense(id)}
+  async function compressImage(file){return new Promise((resolve)=>{if(!file)return resolve(null);const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.8))};img.src=r.result};r.readAsDataURL(file)})}
+  async function uploadMemoryImage(dataUrl){if(!supabase||!dataUrl)return null;const blob=await (await fetch(dataUrl)).blob();const path=`${state.couple.id}/${uuid()}.jpg`;const {error}=await supabase.storage.from('memories').upload(path,blob,{contentType:'image/jpeg',upsert:false});if(error){console.warn(error);return null}const {data}=supabase.storage.from('memories').getPublicUrl(path);return data.publicUrl}
+  function openMemory(id=null){const x=id?state.data.memories.find(v=>v.id===id):null;openModal(id?'Edit Memory':'Add Memory',`${field('Title','title','text',x?.title||'','required')}${field('Date','memory_date','date',x?.memory_date||todayISO(),'required')}${textareaField('Note','note',x?.note||'')}<div class="field"><label for="f_image">Photo (optional)</label><input id="f_image" name="image" type="file" accept="image/*"><div class="tiny muted">Photos are resized before upload. A Supabase Storage bucket named <code>memories</code> is required for uploads.</div></div>`,async(fd)=>{let image_url=x?.image_url||null;const file=fd.get('image');if(file&&file.size){const d=await compressImage(file);image_url=await uploadMemoryImage(d)||image_url}const p={title:fd.get('title').trim(),memory_date:fd.get('memory_date'),note:fd.get('note')||null,image_url,updated_at:new Date().toISOString()};if(!p.title||!p.memory_date)return toast('Enter a title and date.','bad');id?await update('memories',id,p):await insert('memories',p);closeModal();toast('Memory saved','ok')})}
+  function editMemory(id){openMemory(id)}
+  function openWish(id=null){const x=id?state.data.wishlist.find(v=>v.id===id):null;openModal(id?'Edit Wishlist Item':'Add Wishlist Item',`${field('Title','title','text',x?.title||'','required')}${selectField('Category','category',wishlistCats,x?.category||wishlistCats[0])}${selectField('Priority','priority',priorities,x?.priority||'Medium')}${textareaField('Notes','notes',x?.notes||'')}`,async(fd)=>{const p={title:fd.get('title').trim(),category:fd.get('category'),priority:fd.get('priority'),notes:fd.get('notes')||null,completed:x?.completed||false,updated_at:new Date().toISOString()};if(!p.title)return toast('Enter a wishlist item.','bad');id?await update('wishlist',id,p):await insert('wishlist',p);closeModal();toast('Wishlist saved','ok')})}
+  function editWish(id){openWish(id)}
+  function toggleWish(id,completed){update('wishlist',id,{completed,updated_at:new Date().toISOString()})}
+  function addNote(){openModal('Love Note',`${textareaField('Message','message','')}`,async(fd)=>{const m=fd.get('message').trim();if(!m)return toast('Write a message first.','bad');await insert('notifications',{type:'love_note',title:'Love Note 💌',message:m,remind_at:null});closeModal();toast('Love note shared ❤️','ok')})}
+
+  // ---------- Settings / notifications ----------
+  async function saveCouple(){const name=$('#f_couple_name')?.value.trim(),start=$('#f_relationship_start_date')?.value||null;if(!name)return toast('Couple name is required.','bad');const {data,error}=await supabase.from('couples').update({couple_name:name,relationship_start_date:start,updated_at:new Date().toISOString()}).eq('id',state.couple.id).select().single();if(error){toast('Could not save couple settings.','bad');return}state.couple=data;cacheSave();renderAll();toast('Couple settings saved','ok')}
+  function editProfile(){openModal('Display Name',`${field('Display Name','display_name','text',state.profile?.display_name||'')}`,async(fd)=>{const name=fd.get('display_name').trim()||'Shared account';const {data,error}=await supabase.from('profiles').update({display_name:name}).eq('user_id',state.user.id).select().single();if(error)return toast('Could not update profile.','bad');state.profile=data;cacheSave();closeModal();renderAll();toast('Profile updated','ok')})}
+  function togglePref(k,on){const p=JSON.parse(localStorage.getItem('together-prefs')||'{"event":true,"anniversary":true,"date":true,"task":true,"goal":true,"budget":true}');p[k]=on;localStorage.setItem('together-prefs',JSON.stringify(p));renderSettings()}
+  function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';setTheme();renderAll()}
+  async function requestNotifications(){if(!('Notification' in window)){toast('This browser does not support notifications.','bad');return}const p=await Notification.requestPermission();toast(p==='granted'?'Alerts enabled on this device.':'Notifications remain disabled.',p==='granted'?'ok':'bad')}
+  async function deleteAccount(){if(!confirm('Delete all shared couple data?\n\nThis cannot be undone. Your Auth account itself may require the optional Supabase Edge Function in this project to be fully deleted.'))return;try{const {error}=await supabase.rpc('delete_my_couple_data');if(error){toast('Account deletion is not available until the SQL function is installed.','bad');return}await supabase.auth.signOut();localStorage.removeItem(CACHE_KEY);toast('Shared data deleted.','ok')}catch(e){toast('Could not delete shared data.','bad')}}
+  async function logout(){await supabase.auth.signOut();state.session=null;state.user=null;state.profile=null;state.couple=null;showAuth()}
+
+  // ---------- Utilities ----------
+  function moveMonth(delta){state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()+delta,1);renderCalendar()}
+  function selectDay(iso){state.selectedDate=iso;const d=new Date(iso+'T00:00:00');state.calendarDate=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar()}
+  function surprise(){const ideas=['Movie night','Coffee date','Sunset walk','Picnic','Cook together','Game night','Try a new restaurant','Photo walk','Beach day','DIY activity'];const x=ideas[Math.floor(Math.random()*ideas.length)];const el=$('#ideaText');if(el)el.textContent=x}
+  function quick(id){if(id==='dates')openDate();else if(id==='calendar')openEvent();else if(id==='expenses')openExpense();else if(id==='goals')openGoal();else if(id==='tasks')openTask();else if(id==='memories')openMemory()}
+  function checkReminders(){if(!state.session)return;const prefs=JSON.parse(localStorage.getItem('together-prefs')||'{}');const now=Date.now();const events=state.data.events||[];events.forEach(e=>{if(!e.reminder||e.reminder==='none')return;const offset={['10m']:10*60000,['1h']:3600000,['1d']:86400000,['1w']:604800000}[e.reminder]||0;const due=new Date(`${e.event_date}T${e.start_time||'09:00'}`).getTime()-offset;if(due<=now&&due>now-15*60000&&prefs.event!==false){if('Notification'in window&&Notification.permission==='granted')new Notification(e.title,{body:`${dateFmt(e.event_date)} ${timeFmt(e.start_time)}`});}})}
+
+  // ---------- Public bridge for inline handlers ----------
+  window.app={go,quick,openEvent,editEvent,openDate,editDate,openTask,openGoal,editGoal,addContribution,openExpense,editExpense,openMemory,editMemory,openWish,editWish,toggleWish,toggleTask,remove,moveMonth,selectDay,surprise,addNote,saveCouple,editProfile,togglePref,toggleTheme,requestNotifications,deleteAccount,logout};
+  $('#themeBtn').onclick=toggleTheme;$('#logoutBtnSide').onclick=logout;$('#fab').onclick=()=>quick(state.current==='home'?'dates':state.current);
+  // Ensure More is a real screen even though it isn't a persistent HTML node at startup.
+  const originalGo=go;window.app.go=(screen)=>{if(screen==='more'){state.current='more';renderAll();return}originalGo(screen)};
+  setInterval(checkReminders,60000);
+  init();
+})();
+</script>
+</body>
+</html>
