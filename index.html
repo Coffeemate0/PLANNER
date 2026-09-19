@@ -363,8 +363,105 @@
   function editProfile(){openModal('Display Name',`${field('Display Name','display_name','text',state.profile?.display_name||'')}`,async(fd)=>{const name=fd.get('display_name').trim()||'Shared account';const {data,error}=await supabase.from('profiles').update({display_name:name}).eq('user_id',state.user.id).select().single();if(error)return toast('Could not update profile.','bad');state.profile=data;cacheSave();closeModal();renderAll();toast('Profile updated','ok')})}
   function togglePref(k,on){const p=JSON.parse(localStorage.getItem('together-prefs')||'{"event":true,"anniversary":true,"date":true,"task":true,"goal":true,"budget":true}');p[k]=on;localStorage.setItem('together-prefs',JSON.stringify(p));renderSettings()}
   function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';setTheme();renderAll()}
-  async function requestNotifications(){if(!('Notification' in window)){toast('This browser does not support notifications.','bad');return}const p=await Notification.requestPermission();toast(p==='granted'?'Alerts enabled on this device.':'Notifications remain disabled.',p==='granted'?'ok':'bad')}
-  async function deleteAccount(){if(!confirm('Delete all shared couple data?\n\nThis cannot be undone. Your Auth account itself may require the optional Supabase Edge Function in this project to be fully deleted.'))return;try{const {error}=await supabase.rpc('delete_my_couple_data');if(error){toast('Account deletion is not available until the SQL function is installed.','bad');return}await supabase.auth.signOut();localStorage.removeItem(CACHE_KEY);toast('Shared data deleted.','ok')}catch(e){toast('Could not delete shared data.','bad')}}
+ /* async function requestNotifications(){if(!('Notification' in window)){toast('This browser does not support notifications.','bad');return}const p=await Notification.requestPermission();toast(p==='granted'?'Alerts enabled on this device.':'Notifications remain disabled.',p==='granted'?'ok':'bad')}*/
+ async function requestNotifications(){
+
+  try {
+
+    // Must be opened from the Home Screen PWA
+    if(!window.isSecureContext){
+      toast('Notifications require HTTPS.','bad');
+      return;
+    }
+
+    if(!('Notification' in window)){
+      toast('This browser does not support notifications.','bad');
+      return;
+    }
+
+    if(!('serviceWorker' in navigator)){
+      toast('Service Worker is not supported.','bad');
+      return;
+    }
+
+    if(!('PushManager' in window)){
+      toast('Push notifications are not supported here.','bad');
+      return;
+    }
+
+    // Ask iPhone for notification permission
+    const permission = await Notification.requestPermission();
+
+    if(permission !== 'granted'){
+      toast('Notifications are disabled. Check iPhone Settings.','bad');
+      return;
+    }
+
+    // Get your existing service worker
+    const registration = await navigator.serviceWorker.ready;
+
+    // Check whether this device is already subscribed
+    let subscription = await registration.pushManager.getSubscription();
+
+    if(!subscription){
+
+      /*
+       * For now this creates the Push subscription.
+       * A VAPID public key is required for real Web Push.
+       */
+      const VAPID_PUBLIC_KEY = 'BOPkVggx65D6GjPr01qAcjSq7jnsCHHrqriUKCXDf6vuPqP6Raf4bJqQbG-xReXcZgQJvc7KAV4rdzmzX0k06Q';
+
+      if(VAPID_PUBLIC_KEY === 'BOPkVggx65D6GjPr01qAcjSq7jnsCHHrqriUKCXDf6vuPqP6Raf4bJqQbG-xReXcZgQJvc7KAV4rdzmzX0k06Q'){
+        toast(
+          'iPhone notifications are allowed, but Web Push still needs to be configured.',
+          'bad'
+        );
+        return;
+      }
+
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    console.log('Together Push Subscription:', subscription);
+
+    // Remember that this device enabled notifications
+    localStorage.setItem(
+      'together-notifications-enabled',
+      'true'
+    );
+
+    toast('Notifications enabled ❤️','ok');
+
+  } catch(error) {
+
+    console.error('Notification setup error:',error);
+
+    toast(
+      error?.message || 'Could not enable notifications.',
+      'bad'
+    );
+  }
+}
+function urlBase64ToUint8Array(base64String){
+
+  const padding =
+    '='.repeat((4 - base64String.length % 4) % 4);
+
+  const base64 =
+    (base64String + padding)
+      .replace(/-/g,'+')
+      .replace(/_/g,'/');
+
+  const rawData = atob(base64);
+
+  return Uint8Array.from(
+    [...rawData].map(char => char.charCodeAt(0))
+  );
+}
+ async function deleteAccount(){if(!confirm('Delete all shared couple data?\n\nThis cannot be undone. Your Auth account itself may require the optional Supabase Edge Function in this project to be fully deleted.'))return;try{const {error}=await supabase.rpc('delete_my_couple_data');if(error){toast('Account deletion is not available until the SQL function is installed.','bad');return}await supabase.auth.signOut();localStorage.removeItem(CACHE_KEY);toast('Shared data deleted.','ok')}catch(e){toast('Could not delete shared data.','bad')}}
   async function logout(){await supabase.auth.signOut();state.session=null;state.user=null;state.profile=null;state.couple=null;showAuth()}
 
   // ---------- Utilities ----------
@@ -385,3 +482,4 @@
 </script>
 </body>
 </html>
+
